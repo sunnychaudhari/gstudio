@@ -137,15 +137,45 @@
           <a class="tiny button" data-reveal-id="view_add_event"> 
            {% blocktrans %} <span class="fi-plus">&nbsp;&nbsp;Add Events </span>&nbsp;&nbsp; <i class=""></i>{% endblocktrans %}  
           </a>
-{% blocktrans %}
           <div id="view_add_event" class="reveal-modal" data-reveal style="height:500px;overflow:scroll;"> 
         
-            <b>Add events feature will be comming soon</b>
+            {% blocktrans %} <b>Add events feature will be comming soon</b> {% endblocktrans %}
 
             <a class="close-reveal-modal">&#215;</a>
           </div>
-{% endblocktrans %}
         </div>
+
+        <div> 
+          <a class="tiny button" data-reveal-id="view_add_concept"> 
+           {% blocktrans %} <span class="fi-plus">&nbsp;&nbsp;Add Concepts </span>&nbsp;&nbsp; <i class=""></i>{% endblocktrans %}  
+          </a>
+          <div id="view_add_concept" class="reveal-modal" data-reveal style="height:500px;overflow:scroll;"> 
+            <h3>{% blocktrans %} Add New Concept{% endblocktrans %} for {{node.name}}</h3><br/>
+
+            <!-- To enter name of the concept -->
+            <div>
+              <input class="name_id" name="name" type="text" placeholder="Enter concept name...">
+            </div>
+            <!-- To enter name of the relation type -->
+            <div>
+
+              <input type="text" name="concept_name" list="conceptName" placeholder="Enter the relation name with this topic..." />
+              <datalist id="conceptName">
+                  <option value="Pen">Pen</option>
+                  <option value="Pencil">Pencil</option>
+                  <option value="Paper">Paper</option>
+              </datalist>
+              
+            </div> 
+
+            
+
+            <input type="submit" id="add_concept" value="Save Concept" class="medium round button"/>
+
+            <a class="close-reveal-modal">&#215;</a>
+          </div>
+        </div>
+
       </div>
     </dd>
   </dl>
