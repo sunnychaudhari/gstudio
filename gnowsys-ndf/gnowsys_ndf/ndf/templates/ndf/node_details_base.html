@@ -146,7 +146,7 @@
         </div>
 
         <div> 
-          <a class="tiny button" data-reveal-id="view_add_concept"> 
+          <a class="tiny button" id="addConcept" data-reveal-id="view_add_concept"> 
            {% blocktrans %} <span class="fi-plus">&nbsp;&nbsp;Add Concepts </span>&nbsp;&nbsp; <i class=""></i>{% endblocktrans %}  
           </a>
           <div id="view_add_concept" class="reveal-modal" data-reveal style="height:500px;overflow:scroll;"> 
@@ -154,21 +154,84 @@
 
             <!-- To enter name of the concept -->
             <div>
-              <input class="name_id" name="name" type="text" placeholder="Enter concept name...">
-            </div>
-            <!-- To enter name of the relation type -->
-            <div>
+              <div class="row">
 
-              <input type="text" name="concept_name" list="conceptName" placeholder="Enter the relation name with this topic..." />
-              <datalist id="conceptName">
-                  <option value="Pen">Pen</option>
-                  <option value="Pencil">Pencil</option>
-                  <option value="Paper">Paper</option>
-              </datalist>
+               <div class="small-3 columns">
+                {% blocktrans %} Select Relation Name : {% endblocktrans %}  
+               </div>
+
+               <div class="small-7 columns">
+                <select id="relName">
+                  <option value="None">--- select relation name ---</option>
+                  {% for each in relations %}
+                    <option value="{{each.name}}">{{each.name}} -- {{each.inverse_name}}</option>
+                  {% endfor %}
+                </select>  
+               </div>
+
+               <div class="small-2 columns">
+                <a id="add_relation" class="small button fi-plus"></a>
+               </div>
+
+              </div>
+
+              <div class="row add_relation" style="display:none;">
+                <div class="small-12 columns" style="background-color: #b0c4de;">
+                    <br/>
+                    <div class="small-3 columns">
+                      {% blocktrans %} Enter Relation Name : {% endblocktrans %} 
+                    </div>
+                    <div class="small-9 columns">
+                      <input id="relation_name" type="text" placeholder="Enter Relation Name...">  
+                    </div>
+                  
+                    <div class="small-3 columns">
+                      {% blocktrans %} Enter Inverse Relation Name : {% endblocktrans %}  
+                    </div>
+                    <div class="small-9 columns">
+                      <input id="inverse_name" type="text" placeholder="Enter Inverse Relation Name...">  
+                    </div>
+                  
+                    <div class="small-12 columns">
+                      {% blocktrans %} Specify reason for creating this relation {% endblocktrans %}
+                    </div>
+                    <div class="medium-12 columns">
+                      {% include "ndf/add_editor.html" with var_name="content_org" var_placeholder="Enter the content here" %}
+                    </div>
+
+                    <input type="submit" id="addRelation" value="Send Request" class="small round button"/>
+                
+                </div>
+              </div><br/>                
+
+              <div class="row">
+                <div class="small-12 columns">
+                  <dl class="accordion" data-accordion>
+                  <dd>
+                    <a href="#addConcept" class="small-2 columns button">{% blocktrans %}Add New Concept{% endblocktrans %}</a>
+                    <div id="addConcept" class="content">
+                      <input id="concept_name" type="text" placeholder="Enter Concept Name...">  
+                      <input type="submit" id="add_save_concept" value="Add & Save New Concept" class="small round button"/>
+                    </div>                    
+                  </dd>
+                  </dl>  
+                </div>                
+              </div>           
               
-            </div> 
-
-            
+              <div class="row">
+                <div class="small-12 columns">
+                  {% blocktrans %} Select Concept/Topic from following drawers : {% endblocktrans %}                   
+                </div>
+              </div>              
+              <div class="row">
+                <div class="small-12 columns">
+                  <div id="collection_drawer">
+                    {% edit_drawer_widget "collection" groupid node "Concept" %}
+                  </div>
+                </div>
+              </div>
+                          
+            </div>
 
             <input type="submit" id="add_concept" value="Save Concept" class="medium round button"/>
 
@@ -212,6 +275,31 @@ $("#add_page").click(function() {
       });
 
 });
+
+$("#add_relation").click(function() {
+  $(".add_relation").css("display", "block");
+});
+
+$("#addRelation").click(function() {
+  alert("Your request for creating this relation is sent for approval\n\nThe team will get back to you very soon regarding your request");
+});
+
+$("#add_save_concept").click(function() {
+  var selected_rel = $("#relName").val();
+  if (selected_rel == "None"){
+    alert("Please choose relation name");        
+  }
+
+});
+
+$("#add_concept").click(function() {
+  var selected_rel = $("#relName").val();
+  if (selected_rel == "None"){
+    alert("Please choose relation name");        
+  }
+
+});
+
 
 </script>
 {% endif %}
