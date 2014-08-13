@@ -601,6 +601,12 @@ def topic_detail_view(request, group_id, app_Id=None):
   # Appends the elements in breadcrumbs_list first time the resource which is clicked
   breadcrumbs_list.append( (str(obj._id), obj.name) )
 
+  # For collecting relation types for topic while adding concept
+  relations = collection.Node.find({'_type': 'RelationType', 'object_type': ObjectId(topic_GST._id)}) 
+  cnt = relations.count()
+  if cnt < 1:
+    relations = ""
+
   ###shelf###
   shelves = []
   shelf_list = {}
@@ -628,7 +634,7 @@ def topic_detail_view(request, group_id, app_Id=None):
   return render_to_response('ndf/topic_details.html', 
 	                                { 'node': obj,'app_id': app_id,'breadcrumbs_list': breadcrumbs_list,
 	                                  'group_id': group_id,'shelves': shelves,'topic': topic,
-	                                  'groupid':group_id,'shelf_list': shelf_list
+	                                  'groupid':group_id,'shelf_list': shelf_list, 'relations': relations
 	                                },
 	                                context_instance = RequestContext(request)
   )
