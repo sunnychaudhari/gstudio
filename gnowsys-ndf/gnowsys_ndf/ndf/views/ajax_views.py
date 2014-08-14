@@ -533,6 +533,34 @@ def add_page(request, group_id):
     return HttpResponse("None")
 
 
+def add_concept(request, group_id):
+  if request.is_ajax() and request.method == "POST":    
+    context_node_id = request.POST.get("context_node", '')
+    concept_name = request.POST.get("concept_name", '')
+    relation_name = request.POST.get("relation_name", '')
+
+    print "\ncontext_node: ",context_node_id,"\n"
+    print "\nconcept_name: ",concept_name,"\n"
+    print "\nrelation_name_: ",relation_name,"\n"
+
+    concept_GST = collection.Node.one({'_type': 'GSystemType', 'name': 'Concept'})
+    context_node = collection.Node.one({'_id': ObjectId(context_node_id)})
+    topic_GST = collection.Node.one({'_type': 'GSystemType', 'name': 'Topic'})
+    RT = collection.Node.one({'_type': 'RelationType', 'name': unicode(relation_name)})
+
+    # First save concept as a GSystem
+    concept_obj = collection.GSystem.one({'_type': 'GSystem', 'name': unicode(concept_name) })
+
+    concept_obj = collection.GSystem()
+    concept_obj.name = unicode(concept_name)
+    concept_obj.member_of.append(concept_GST._id) 
+    concept_obj.created_by = int(request.user.pk)
+    concept_obj.modified_by = int(request.user.pk)
+    print "\nconcept_obj: ",concept_obj,"\n"
+    # concept_obj.save()
+
+
+
 def add_file(request, group_id):
   # this is context node getting from the url get request
   context_node_id=request.GET.get('context_node','')
