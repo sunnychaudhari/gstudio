@@ -289,6 +289,26 @@ $("#add_save_concept").click(function() {
   if (selected_rel == "None"){
     alert("Please choose relation name");        
   }
+  else{
+    $.ajax({
+        type: "POST",
+        url: "{% url 'add_concept' groupid %}",
+        datatype: "html",
+        data:{
+          context_node: "{{node.pk}}",
+          concept_name: $("#concept_name").val(),
+          relation_name: selected_rel,
+          // content_org: $(".orgedit").val(),
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        success: function(data) {
+          
+          
+        }
+    });
+
+  }
+
 
 });
 
