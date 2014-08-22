@@ -185,12 +185,22 @@ def get_drawers(group_id, nid=None, nlist=[], checked=None):
       elif checked == "Topic":
         drawer = collection.Node.find({'_type': {'$in' : [u"GSystem", u"File"]}, 'member_of':{'$nin':[theme_GST_id._id, theme_item_GST._id, topic_GST_id._id]},'group_set': {'$all': [ObjectId(group_id)]}})
 
+      elif checked == "Concept":
+        drawer = collection.Node.find({'_type': {'$in' : [u"GSystem"]}, 'member_of':{'$in':[topic_GST_id._id, concept_GST._id]},'group_set': {'$all': [ObjectId(group_id)]}})
+        if nlist:
+          for each in nlist:
+            n = None
+            n = collection.Node.one({'_id': ObjectId(each), 'member_of': {'$in':[topic_GST_id._id, concept_GST._id]}, 'group_set': ObjectId(group_id)})
+            if not n:
+              nlist.remove(each)
+
       elif type(checked) == list:
+        print "\n inside type(checked) \n"
+        print checked
         # Special case: used while dealing with RelationType widget
         drawer = checked
 
-      elif checked == "Concept":
-        drawer = collection.Node.find({'_type': {'$in' : [u"GSystem"]}, 'member_of':{'$in':[topic_GST_id._id, concept_GST._id]},'group_set': {'$all': [ObjectId(group_id)]}})   
+
 
     else:
       # For heterogeneous collection      
