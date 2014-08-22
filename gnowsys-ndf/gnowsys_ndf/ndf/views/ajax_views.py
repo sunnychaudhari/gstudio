@@ -598,7 +598,7 @@ def add_concept(request, group_id):
       for r_sub in nlist:
         if r_sub not in concept_list:
           grelation = collection.Node.one({"_type":"GRelation","subject":context_node._id,"right_subject": r_sub })
-          # grelation.delete()
+          grelation.delete()
          
 
       return HttpResponse("success")
