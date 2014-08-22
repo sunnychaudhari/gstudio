@@ -303,6 +303,7 @@ def get_all_replies(parent):
 @register.inclusion_tag('ndf/drawer_widget.html')
 def edit_drawer_widget(field, group_id, node, checked=None):
 
+	topic_GST = collection.Node.one({'_type': 'GSystemType', 'name': 'Topic'})
 	drawers = None
 	drawer1 = None
 	drawer2 = None
@@ -313,8 +314,6 @@ def edit_drawer_widget(field, group_id, node, checked=None):
 				checked = "QuizItem"
 			elif checked == "Theme":
 				checked = "Theme"
-			elif checked == "Concept":
-				checked = "Concept"
 			else:
 				checked = None
 			drawers = get_drawers(group_id, node._id, node.collection_set, checked)
@@ -328,6 +327,23 @@ def edit_drawer_widget(field, group_id, node, checked=None):
 		elif type(checked) == list:
 			# Special case used while dealing with RelationType widget
 			drawers = get_drawers(group_id, node['_id'], node[field], checked)
+
+		elif field == "concept":
+			checked = "Concept"
+			nlist=[]
+			# relationtype = collection.Node.one({"_type":"RelationType","name":"teaches"})
+			
+			relationtype = collection.Node.find({"_type":"RelationType",'subject_type': ObjectId(topic_GST._id) })
+			for l in relationtype:				
+				list_grelations = collection.Node.find({"_type":"GRelation","subject":node._id,"relation_type":l.get_dbref()})
+
+				# list_grelations = collection.Node.find({"_type":"GRelation","subject":node._id,"relation_type":relationtype.get_dbref()})
+				for relation in list_grelations:
+					print "\n",relation.name,"\n"
+					nlist.append(ObjectId(relation.right_subject))
+			
+			print "\n nlist in edit drawer_widget: ",nlist,"\n"
+			drawers = get_drawers(group_id, node._id, nlist, checked)
 		
 		drawer1 = drawers['1']
 		drawer2 = drawers['2']
