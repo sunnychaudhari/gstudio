@@ -602,7 +602,7 @@ def topic_detail_view(request, group_id, app_Id=None):
   breadcrumbs_list.append( (str(obj._id), obj.name) )
 
   # For collecting relation types for topic while adding concept
-  relations = collection.Node.find({'_type': 'RelationType', 'object_type': ObjectId(topic_GST._id)}) 
+  relations = collection.Node.find({'_type': 'RelationType', 'subject_type': ObjectId(topic_GST._id)}) 
   cnt = relations.count()
   if cnt < 1:
     relations = ""

@@ -553,26 +553,82 @@ def add_concept(request, group_id):
     context_node_id = request.POST.get("context_node", '')
     concept_name = request.POST.get("concept_name", '')
     relation_name = request.POST.get("relation_name", '')
+    concept_list = request.POST.get("concept_list",'')
+    if concept_list:
+      concept_list = [ObjectId(each.strip()) for each in concept_list.split(",")]
 
-    print "\ncontext_node: ",context_node_id,"\n"
-    print "\nconcept_name: ",concept_name,"\n"
-    print "\nrelation_name_: ",relation_name,"\n"
+    concept_rel = ""
+    # print "\n",concept_list
+    # print "\ncontext_node: ",context_node_id,"\n"
+    # print "\nconcept_name: ",concept_name,"\n"
+    # print "\nrelation_name_: ",relation_name,"\n"
 
     concept_GST = collection.Node.one({'_type': 'GSystemType', 'name': 'Concept'})
     context_node = collection.Node.one({'_id': ObjectId(context_node_id)})
     topic_GST = collection.Node.one({'_type': 'GSystemType', 'name': 'Topic'})
     RT = collection.Node.one({'_type': 'RelationType', 'name': unicode(relation_name)})
 
-    # First save concept as a GSystem
-    concept_obj = collection.GSystem.one({'_type': 'GSystem', 'name': unicode(concept_name) })
+    if concept_list:
+      # checking if each _id in collection_list is valid or not
+      nlist = []
+      i = 0
+      while (i < len(concept_list)):
+        node_id = ObjectId(concept_list[i])
 
-    concept_obj = collection.GSystem()
-    concept_obj.name = unicode(concept_name)
-    concept_obj.member_of.append(concept_GST._id) 
-    concept_obj.created_by = int(request.user.pk)
-    concept_obj.modified_by = int(request.user.pk)
-    print "\nconcept_obj: ",concept_obj,"\n"
-    # concept_obj.save()
+        if collection.Node.one({"_id": node_id}):
+          concept_rel = collection.GRelation.one({'subject': ObjectId(context_node._id), 'right_subject': ObjectId(node_id) })
+
+          if not concept_rel:
+            concept_rel = collection.GRelation()
+            concept_rel.subject = ObjectId(context_node._id) 
+            concept_rel.relation_type = RT
+            concept_rel.right_subject = ObjectId(node_id)
+            concept_rel.save()
+
+        i = i+1
+        
+
+      relationtype = collection.Node.find({"_type":"RelationType",'subject_type': ObjectId(topic_GST._id) })
+      for l in relationtype:
+        list_grelations = collection.Node.find({"_type":"GRelation","subject":context_node._id,"relation_type":l.get_dbref()})
+
+        for relation in list_grelations:
+          nlist.append(ObjectId(relation.right_subject))
+
+      for r_sub in nlist:
+        if r_sub not in concept_list:
+          grelation = collection.Node.one({"_type":"GRelation","subject":context_node._id,"right_subject": r_sub })
+          # grelation.delete()
+         
+
+      return HttpResponse("success")
+
+    if concept_name:
+      concept_obj = collection.GSystem.one({'_type': 'GSystem', 'name': unicode(concept_name), 'member_of': ObjectId(concept_GST._id) })
+      if concept_obj:
+        concept_rel = collection.GRelation.one({'subject': ObjectId(context_node._id), 'right_subject': ObjectId(concept_obj._id) })
+
+      # First save concept as a GSystem
+      if not concept_obj:
+        concept_obj = collection.GSystem()
+        concept_obj.name = unicode(concept_name)
+        concept_obj.member_of.append(concept_GST._id) 
+        concept_obj.created_by = int(request.user.pk)
+        concept_obj.modified_by = int(request.user.pk)
+        concept_obj.save()
+              
+      if not concept_rel:
+        concept_rel = collection.GRelation()
+        concept_rel.subject = ObjectId(context_node._id) 
+        concept_rel.relation_type = RT
+        concept_rel.right_subject = ObjectId(concept_obj._id)
+        concept_rel.save()
+
+        return HttpResponse("success")
+
+      return HttpResponse("failure")    
+
+
 
 
 
