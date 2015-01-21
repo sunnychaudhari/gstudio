@@ -1,45 +1,128 @@
-<div id="filter-area">
-	
-	<div id="applied-filters">
-		 
-	</div>
+{% load i18n %}
+{% load ndf_tags %}
 
-	<div id="create-filter">
-		<div class="row">
-			<div class="small-2 columns text-right"><h5>Select filter</h5></div>
-			<div class="small-4 columns">
-				<select name="search-field-name">
-					<option value=""> -- Select -- </option>
-					<option value="ABC">ABC</option>
-					<option value="LMN">LMN</option>
-					<option value="XYZ">XYZ</option>
-				</select>
-			</div>
-			<div class="small-4 columns">
-				<select name="search-field-value">
-					<option value=""> -- Select -- </option>
-					<option value="ABC">ABCABCABC</option>
-					<option value="LMN">LMNLMNLMN</option>
-					<option value="XYZ">XYZXYZXYZ</option>
-				</select>				
-			</div>
-			<div class="small-1 small-pull-1 columns">
-				<input type="button" class="button tiny" value="Apply filter" id="filter-btn">
-			</div>
-		</div>
-	</div>
-</div>
+<style type="text/css">
+	/*Style for dropdown*/
 
-<script type="text/javascript">
+ul#navigation {
+  position:relative;
+  float:left;
+}
 
-	$("#filter-btn").click(function(){
+ul#navigation li {
+  display:inline;
+  float:left;
+  position:relative;
+}
 
-		var selFieldValue = $("select[name='search-field-value'] :selected").val(),
-			selFieldText  = $("select[name='search-field-value'] :selected").text();
+ul#navigation li a {
+  padding:7px 7px;
+  text-shadow:1px 1px 0px #fff;
+  display:inline-block;  
+}
 
-		$("#applied-filters").append("<div class='filters label'>" + selFieldText + "</div>")
-		// alert(selFieldText + ";;;;" + selFieldValue)
+ul#navigation li a:hover {
+  background:#f8f8f8;
+  color:#282828;
+}
 
-	})
+ul#navigation li:hover > a {
+  background:#fff;
+}
 
-</script>
+/* Drop-Down Navigation */
+ul#navigation li:hover > ul
+{
+  visibility:visible;
+  opacity:1;
+}
+
+ul#navigation ul, ul#navigation ul li ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;    
+  visibility:hidden;
+  position: absolute;
+  z-index: 99999;
+  width:180px;
+  /*width: 30em !important;*/
+  background:#f8f8f8;
+  box-shadow:1px 1px 3px #ccc;
+  opacity:0;
+  -webkit-transition:opacity 0.2s linear, visibility 0.2s linear; 
+  -moz-transition:opacity 0.2s linear, visibility 0.2s linear; 
+  -o-transition:opacity 0.2s linear, visibility 0.2s linear; 
+  transition:opacity 0.2s linear, visibility 0.2s linear;   
+}
+
+ul#navigation ul {
+    top: 43px;
+    left: 1px;
+}
+
+ul#navigation ul li ul {
+    top: 0;
+    left: 181px;
+}
+
+ul#navigation ul li {
+  clear:both;
+  width:100%;
+  border:0 none;
+  border-bottom:1px solid #c9c9c9;
+}
+
+ul#navigation ul li a {
+  background:none;
+  padding:7px 15px;
+  color:#616161;
+  text-shadow:1px 1px 0px #fff;
+  text-decoration:none;
+  display:inline-block;
+  border:0 none;
+  float:left;
+  clear:both;
+  width:100%;
+}
+
+ul#navigation li a.first {
+  border-left: 0 none;
+}
+
+ul#navigation li a.last {
+  border-right: 0 none;
+}
+
+.edu-sub-li {
+  background-color:#f8f8f8;
+  width: 30em !important;
+}
+
+/*end dropdown style*/
+
+</style>
+
+<nav id="nav">
+<ul id="navigation">
+<li><a href="#" class="view-filters"><i class="fi-list"></i> {% trans "Filter based on" %} </a>
+  <ul id="view-elements">
+    {% get_metadata_values as metadata %}
+    {% for k,v in metadata.items %}
+      {% if k == "educationallevel" %}            
+        <li>
+          <a> {% trans "Educational Level" %} &raquo;</a>
+          <ul>
+            {% for opts in v %}
+              <li class="view_list edu-sub-li view-filters" id="{{k}}" title="{{opts}}"><a>{% trans opts %}</a></li>
+            {% endfor %}
+          </ul>
+        </li> 
+      <!-- {#% elif k == "educationalsubject" %#}
+        <li class="view_list" id="{{k}}"><a> {% trans "Educational Subject" %} </a></li>  -->
+      {% endif %}
+
+    {% endfor %}
+  </ul>
+</li>
+</ul>
+</nav>
