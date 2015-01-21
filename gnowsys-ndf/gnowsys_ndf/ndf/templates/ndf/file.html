@@ -187,9 +187,7 @@
 {% block body_content %}
   {% get_group_name groupid as group_name_tag %}
   
-  {% comment %}  
     {% include "ndf/filters.html" %}
-  {% endcomment %}
 
   <div class="tabs-content gallery">
 
@@ -307,6 +305,15 @@ $("dl.tabs dd").click(function(){
   $(this).off("click");
 });
 
+// select particular type to display contents in file list page
+$(".view_list").click(function() {
+  $("#view-elements").css("display", "none");  // 'ul' and 'li' should be disabled after selection
+
+  var selected = this.id;
+  var choice = this.title;
+  location.href = "{% url 'resource_list' group_name_tag %}?filter="+selected+"&level="+choice;
+
+});
 
 function populateFileList(pageAnchor)
 {
@@ -464,7 +471,6 @@ function populateFileList(pageAnchor)
 //       next.hide();
 //     }
 //   });
-
 
   {% if is_video %}
     alert("Your video file uploaded succesfully, But still in process, play video about 1 hour after");
