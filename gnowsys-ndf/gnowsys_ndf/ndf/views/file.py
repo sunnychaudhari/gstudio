@@ -67,7 +67,7 @@ def file(request, group_id, file_id=None, page_no=1):
     shelves = []
     shelf_list = {}
     auth = collection.Node.one({'_type': 'Author', 'name': unicode(request.user.username) }) 
-    
+
     # if auth:
     #   has_shelf_RT = collection.Node.one({'_type': 'RelationType', 'name': u'has_shelf' })
     #   dbref_has_shelf = has_shelf_RT.get_dbref()
@@ -89,6 +89,12 @@ def file(request, group_id, file_id=None, page_no=1):
     # End of user shelf
 
     pandoravideoCollection=collection.Node.find({'member_of':pandora_video_st._id, 'group_set': ObjectId(group_id) })
+
+    res_filter = request.GET.get('filter','')
+    level = request.GET.get('level','')
+    if not res_filter and not level:
+      res_filter = None
+      level = None
 
     if request.method == "POST":
       # File search view
@@ -280,33 +286,33 @@ def file(request, group_id, file_id=None, page_no=1):
 
       if GSTUDIO_SITE_VIDEO == "pandora" or GSTUDIO_SITE_VIDEO == "pandora_and_local":
 
-        files_dict = get_query_cursor_filetype('$all', [ObjectId(file_id)], group_id, request.user.id, page_no, no_of_objs_pp, "all_files")
+        files_dict = get_query_cursor_filetype('$all', [ObjectId(file_id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level, "all_files")
 
         file_pages = files_dict["result_pages"]
         files_pc = files_dict["result_cur"]
 
       else:
-        files_dict = get_query_cursor_filetype('$all', [ObjectId(file_id)], group_id, request.user.id, page_no, no_of_objs_pp)
+        files_dict = get_query_cursor_filetype('$all', [ObjectId(file_id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level)
 
         files_pc = files_dict["result_cur"]
         file_pages = files_dict["result_pages"]
 
       # --- for documents ---
-      doc = get_query_cursor_filetype('$nin', [ObjectId(GST_IMAGE._id), ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp)
+      doc = get_query_cursor_filetype('$nin', [ObjectId(GST_IMAGE._id), ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level)
 
       docCollection = doc["result_cur"]
       docs_pc = doc["result_cur"]
       doc_pages = doc["result_pages"]
 
       # --- for images ---
-      image_dict = get_query_cursor_filetype('$all', [ObjectId(GST_IMAGE._id)], group_id, request.user.id, page_no, no_of_objs_pp)
+      image_dict = get_query_cursor_filetype('$all', [ObjectId(GST_IMAGE._id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level)
 
       imageCollection = image_dict["result_cur"]
       images_pc = image_dict["result_cur"]
       image_pages = image_dict["result_pages"]
 
       # --- for videos ---
-      video_dict = get_query_cursor_filetype('$all', [ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp)
+      video_dict = get_query_cursor_filetype('$all', [ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level)
 
       videoCollection = video_dict["result_cur"]
       videos_pc = video_dict["result_cur"]
@@ -329,7 +335,7 @@ def file(request, group_id, file_id=None, page_no=1):
       # source_id_set=[]
       # get_member_set = collection.Node.find({'$and':[{'member_of': {'$all': [ObjectId(pandora_video_st._id)]}},{'group_set': ObjectId(group_id)},{'_type':'File'}]})
       # pandora_pages = paginator.Paginator(get_member_set, page_no, no_of_objs_pp)
-      all_videos = get_query_cursor_filetype('$all', [ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp, "all_videos")
+      all_videos = get_query_cursor_filetype('$all', [ObjectId(GST_VIDEO._id)], group_id, request.user.id, page_no, no_of_objs_pp, res_filter, level, "all_videos")
 
       pandora_pages = all_videos["result_pages"]
       get_member_set = all_videos["result_cur"]
@@ -356,7 +362,7 @@ def file(request, group_id, file_id=None, page_no=1):
 
       return render_to_response("ndf/file.html", 
                                 {'title': title,
-                                 'appId':app._id,
+                                 'appId':app._id,'res_filter': res_filter, 'leve':level,
                                  'already_uploaded': already_uploaded,'shelf_list': shelf_list,'shelves': shelves,
                                  # 'sourceid':source_id_set,
                                  'file_pages': file_pages, 'image_pages': image_pages,
@@ -371,7 +377,7 @@ def file(request, group_id, file_id=None, page_no=1):
         return HttpResponseRedirect(reverse('homepage',kwargs={'group_id': group_id, 'groupid':group_id}))
 
 
-def get_query_cursor_filetype(operator, member_of_list, group_id, userid, page_no, no_of_objs_pp, tab_type=None):
+def get_query_cursor_filetype(operator, member_of_list, group_id, userid, page_no, no_of_objs_pp, res_filter=None, level=None, tab_type=None):
     '''
     This method used to fire mongoDB query and send its result along with pagination details. This method is specially for "_type": "File" objects only.
 
@@ -391,8 +397,11 @@ def get_query_cursor_filetype(operator, member_of_list, group_id, userid, page_n
 
     result_dict = {"result_cur": "", "result_pages":"", "result_paginated_cur": "", "result_count": ""}
 
+    filter_dict = {}
+
     if tab_type == "all_videos" or tab_type == "all_files":
-        result_cur = collection.Node.find({'$or':[{'member_of': {'$all': member_of_list}, 
+        
+        filter_dict = {'$or':[{'member_of': {'$all': member_of_list}, 
                                                 '_type': 'File', 'fs_file_ids':{'$ne': []}, 
                                                 'group_set': {'$all': [ObjectId(group_id)]},
                                                 '$or': [
@@ -407,9 +416,16 @@ def get_query_cursor_filetype(operator, member_of_list, group_id, userid, page_n
                                                   'group_set': {'$all': [ObjectId(group_id)]},
                                                   '_type': "File", 'accesss_policy': u"PUBLIC"
                                                   }
-                                           ]}).sort("last_update", -1)
+                                           ]}
+
+        if res_filter and level:
+          filter_dict.update({'attribute_set.'+res_filter:level})
+
+        result_cur = collection.Node.find(filter_dict).sort("last_update", -1)
+
+
     else:
-        result_cur = collection.Node.find({'member_of': {operator: member_of_list},
+        filter_dict = {'member_of': {operator: member_of_list},
                                     '_type': 'File', 'fs_file_ids':{'$ne': []},
                                     'group_set': {'$all': [ObjectId(group_id)]},
                                     '$or': [
@@ -420,7 +436,12 @@ def get_query_cursor_filetype(operator, member_of_list, group_id, userid, page_n
                                         ]
                                      }
                                     ]
-                                }).sort("last_update", -1)
+                                }
+
+        if res_filter and level:
+          filter_dict.update({'attribute_set.'+res_filter:level})
+          
+        result_cur = collection.Node.find(filter_dict).sort("last_update", -1)
 
     if result_cur:
 
