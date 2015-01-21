@@ -562,17 +562,20 @@ def search_drawer(request, group_id):
       )    
       
 
-def get_topic_contents(request, group_id):
+def get_filtered_contents(request, group_id):
     
   if request.is_ajax() and request.method == "POST":
     node_id = request.POST.get("node_id", '')
     selected = request.POST.get("selected", '')
     choice = request.POST.get("choice", '')
-    # node = collection.Node.one({'_id': ObjectId(node_id) })
+    title = request.POST.get("title", '')
+    if title == "E-Library":
+      file(request, group_id, file_id=None, page_no=1)
+    else:
+      # node = collection.Node.one({'_id': ObjectId(node_id) })
+      contents = get_contents(node_id, selected, choice)
 
-    contents = get_contents(node_id, selected, choice)
-
-    return HttpResponse(json.dumps(contents))
+      return HttpResponse(json.dumps(contents))
       
 
 ####Bellow part is for manipulating theme topic hierarchy####
