@@ -383,6 +383,7 @@ def edit_drawer_widget(field, group_id, node=None, page_no=1, checked=None, **kw
 	drawer1 = None
 	drawer2 = None
 	user_type = None
+	nlist = []
 
 	# Special case used while dealing with RelationType widget
 	left_drawer_content = None
@@ -405,8 +406,17 @@ def edit_drawer_widget(field, group_id, node=None, page_no=1, checked=None, **kw
 			checked = checked
 			if kwargs.has_key("user_type"):
 				user_type = kwargs["user_type"]
+				if user_type == "Admin":
+					for each in node.group_admin:
+						obj = node_collection.one({'_type': 'Author', 'created_by': each})
+						nlist.append(obj._id)
 
-			drawers, paged_resources = get_drawers(group_id, node._id, node.group_admin, page_no, checked)
+				if user_type == "Approver":
+					nlist = []
+				if user_type == "Curator":
+					nlist = []	
+
+			drawers, paged_resources = get_drawers(group_id, node._id, nlist, page_no, checked)
 
 		elif field == "module":
 			checked = "Module"
