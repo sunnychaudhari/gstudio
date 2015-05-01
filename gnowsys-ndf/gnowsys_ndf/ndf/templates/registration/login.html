@@ -79,6 +79,7 @@
 				</div>
 
 				<!-- Forgot password link & New Registration link -->
+				{% if site.SITE_NAME != "NROER" %} 
 				<div class="row">
 					<div class="small-6 large-6 small-offset-1 large-offset-1 columns end">
 						<center>
@@ -90,6 +91,7 @@
 						</center>
 					</div>
 				</div>
+				{% endif %}
 				    
 				<!-- <input type="hidden" name="next" value="{{ next }}" /> -->
 			</form>
